@@ -16,17 +16,3 @@ def admin_required(f):
         
         return f(*args, **kwargs)
     return decorated_function
-
-def team_member_required(f):
-    """Decorator to require team membership"""
-    @wraps(f)
-    @jwt_required()
-    def decorated_function(*args, **kwargs):
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user or not user.team_id:
-            return jsonify({'message': 'Team membership required'}), 403
-        
-        return f(*args, **kwargs)
-    return decorated_function

@@ -14,7 +14,6 @@ def index():
         'endpoints': {
             'auth': '/api/auth',
             'challenges': '/api/challenges',
-            'teams': '/api/teams',
             'submissions': '/api/submissions'
         }
     })

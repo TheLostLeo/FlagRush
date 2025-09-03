@@ -11,12 +11,10 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     
     # Relationships
-    team = db.relationship('Team', backref='members')
     submissions = db.relationship('Submission', backref='user')
     
     def set_password(self, password):
@@ -34,7 +32,6 @@ class User(db.Model):
             'username': self.username,
             'email': self.email,
             'is_admin': self.is_admin,
-            'team_id': self.team_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'last_login': self.last_login.isoformat() if self.last_login else None
         }

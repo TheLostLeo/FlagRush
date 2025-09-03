@@ -28,12 +28,10 @@ def create_app(config_name=None):
     # Register blueprints
     from app.routes.auth import auth_bp
     from app.routes.challenges import challenges_bp
-    from app.routes.teams import teams_bp
     from app.routes.submissions import submissions_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(challenges_bp, url_prefix='/api/challenges')
-    app.register_blueprint(teams_bp, url_prefix='/api/teams')
     app.register_blueprint(submissions_bp, url_prefix='/api/submissions')
     
     # Create database tables

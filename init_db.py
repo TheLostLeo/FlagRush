@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Team, Challenge, Submission
+from app.models import User, Challenge, Submission
 from werkzeug.security import generate_password_hash
 import os
 
