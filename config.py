@@ -10,16 +10,16 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key'
     JWT_ACCESS_TOKEN_EXPIRES = int(os.environ.get('JWT_ACCESS_TOKEN_EXPIRES', 3600))
     
-    # Database configuration for AWS RDS
+    # Database configuration for AWS RDS PostgreSQL
     DB_HOST = os.environ.get('DB_HOST')
-    DB_PORT = os.environ.get('DB_PORT', '3306')
+    DB_PORT = os.environ.get('DB_PORT', '5432')
     DB_USERNAME = os.environ.get('DB_USERNAME')
     DB_PASSWORD = os.environ.get('DB_PASSWORD')
     DB_NAME = os.environ.get('DB_NAME')
     
     # Construct SQLAlchemy database URI
     if all([DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME]):
-        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+        SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     else:
         # Fallback to SQLite for development
         SQLALCHEMY_DATABASE_URI = 'sqlite:///ctf.db'

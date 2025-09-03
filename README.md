@@ -60,7 +60,7 @@ FlagRush/
 2. **Install Dependencies**
    ```bash
    sudo apt update
-   sudo apt install python3 python3-pip -y
+   sudo apt install python3 python3-pip postgresql-client -y
    ```
 
 3. **Clone and Setup**
@@ -91,16 +91,16 @@ The application will be available at `http://your-ec2-ip:5000`
 
 ### Environment Configuration
 
-Edit `.env` file with your AWS RDS details:
+Edit `.env` file with your AWS RDS PostgreSQL details:
 
 ```env
 # Flask Configuration
 SECRET_KEY=your-super-secret-key-change-this-in-production
 JWT_SECRET_KEY=your-jwt-secret-key-change-this-in-production
 
-# Database Configuration (AWS RDS)
+# Database Configuration (AWS RDS PostgreSQL)
 DB_HOST=your-rds-endpoint.region.rds.amazonaws.com
-DB_PORT=3306
+DB_PORT=5432
 DB_USERNAME=your-db-username
 DB_PASSWORD=your-db-password
 DB_NAME=ctf_database
@@ -151,7 +151,7 @@ After running `python3 init_db.py`, a default admin user is created:
 Make sure your EC2 Security Group allows:
 - Port 22 (SSH) - for server access
 - Port 5000 (Custom TCP) - for the Flask application
-- Port 3306 (MySQL) - if connecting to RDS from your local machine
+- Port 5432 (PostgreSQL) - if connecting to RDS from your local machine
 
 ## Running in Background (Optional)
 
