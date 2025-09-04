@@ -68,8 +68,8 @@ def login():
         user.last_login = datetime.utcnow()
         db.session.commit()
         
-        # Create access token
-        access_token = create_access_token(identity=user.id)
+        # Create access token (convert user.id to string for JWT subject)
+        access_token = create_access_token(identity=str(user.id))
         
         return success_response(
             data={
@@ -87,7 +87,7 @@ def login():
 def get_profile():
     """Get current user profile"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         if not user:
@@ -103,7 +103,7 @@ def get_profile():
 def update_profile():
     """Update current user profile"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         if not user:

@@ -14,7 +14,7 @@ submissions_bp = Blueprint('submissions', __name__)
 def submit_flag():
     """Submit a flag for a challenge"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         data = request.get_json()
@@ -74,7 +74,7 @@ def submit_flag():
 def get_user_submissions():
     """Get all submissions for current user"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         submissions = Submission.query.filter_by(user_id=user.id).all()
@@ -99,7 +99,7 @@ def get_user_submissions():
 def get_challenge_submissions(challenge_id):
     """Get user's submissions for a specific challenge"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         submissions = Submission.query.filter_by(
@@ -146,7 +146,7 @@ def get_all_submissions():
 def get_submission_stats():
     """Get submission statistics"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         # User stats
