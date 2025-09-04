@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 class Config:
@@ -26,25 +25,3 @@ class Config:
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-class DevelopmentConfig(Config):
-    """Development configuration"""
-    DEBUG = True
-    FLASK_ENV = 'development'
-
-class ProductionConfig(Config):
-    """Production configuration"""
-    DEBUG = False
-    FLASK_ENV = 'production'
-
-class TestingConfig(Config):
-    """Testing configuration"""
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-
-# Configuration dictionary
-config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'testing': TestingConfig,
-    'default': DevelopmentConfig
-}
