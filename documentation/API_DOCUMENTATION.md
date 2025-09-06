@@ -1,8 +1,8 @@
-# CTF Backend API Documentation
+# FlagRush CTF Backend API Documentation
 
 ## Base URL
 ```
-http://your-server-ip:5000
+http://localhost:8000
 ```
 
 ## Authentication
@@ -10,6 +10,11 @@ Most endpoints require JWT authentication. Include the token in the Authorizatio
 ```
 Authorization: Bearer <your_jwt_token>
 ```
+
+## Interactive Documentation
+FastAPI provides automatic interactive documentation:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
 ## Response Format
 All API responses follow this standardized format:
@@ -38,7 +43,7 @@ All API responses follow this standardized format:
 
 ---
 
-## 🔐 Authentication Endpoints
+## Authentication Endpoints
 
 ### Register User
 **POST** `/api/auth/register`
@@ -186,7 +191,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## 🎯 Challenge Endpoints
+## Challenge Endpoints
 
 ### Get All Challenges
 **GET** `/api/challenges/`
@@ -756,7 +761,7 @@ Check API health status.
 
 ---
 
-## 📝 Notes
+## Notes
 
 ### Authentication
 - JWT tokens expire after 1 hour by default (configurable via `JWT_ACCESS_TOKEN_EXPIRES`)
