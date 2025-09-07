@@ -27,11 +27,25 @@ def health_check():
     })
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('DEBUG', 'True').lower() == 'true'
+    from multiprocessing import Process
     
-    app.run(
-        host='0.0.0.0',
-        port=port,
-        debug=debug
-    )
+    def run_app(host, port, debug):
+        app = create_app()
+        app.run(host=host, port=port, debug=debug)
+    
+    # Configuration for both instances
+    debug = os.environ.get('DEBUG', 'True').lower() == 'true'
+    main_port = int(os.environ.get('PORT', 5000))
+    admin_port = int(os.environ.get('ADMIN_PORT', 5001))
+    
+    # Create two processes for different ports
+    main_process = Process(target=run_app, args=('0.0.0.0', main_port, debug))
+    admin_process = Process(target=run_app, args=('0.0.0.0', admin_port, debug))
+    
+    # Start both processes
+    main_process.start()
+    admin_process.start()
+    
+    # Wait for processes to complete
+    main_process.join()
+    admin_process.join()
