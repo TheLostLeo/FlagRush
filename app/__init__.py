@@ -11,11 +11,9 @@ db = SQLAlchemy()
 jwt = JWTManager()
 migrate = Migrate()
 
-def create_app():
-    """Application factory pattern"""
+def create_main_app():
+    """Create the main application instance (Port 5000)"""
     app = Flask(__name__)
-    
-    # Load configuration
     app.config.from_object(Config)
     
     # Initialize extensions
@@ -24,7 +22,7 @@ def create_app():
     migrate.init_app(app, db)
     CORS(app)
     
-    # Register blueprints
+    # Register user-facing blueprints
     from app.routes.auth import auth_bp
     from app.routes.challenges import challenges_bp
     from app.routes.submissions import submissions_bp
@@ -38,3 +36,30 @@ def create_app():
         db.create_all()
     
     return app
+
+def create_admin_app():
+    """Create the admin application instance (Port 5001)"""
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    
+    # Initialize extensions
+    db.init_app(app)
+    jwt.init_app(app)
+    migrate.init_app(app, db)
+    CORS(app)
+    
+    # Register admin blueprints
+    from app.routes.auth import auth_bp  # Admin still needs auth
+    from app.routes.admin_challenges import admin_challenges_bp
+    
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(admin_challenges_bp, url_prefix='/api/admin')
+    
+    # Share the same database
+    with app.app_context():
+        db.create_all()
+    
+    return app
+
+# For backwards compatibility
+create_app = create_main_app

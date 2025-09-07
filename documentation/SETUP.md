@@ -134,12 +134,12 @@ SUCCESS: Admin user 'your-admin-username' created successfully!
 Database initialization completed successfully!
 ```
 
-### Step 6: Start the FastAPI Server
+### Step 6: Start the Parallel Endpoints
 ```bash
 # Ensure virtual environment is activated
 source FlagRush/bin/activate
 
-# Start the application
+# Start the application (starts both endpoints)
 python3 app.py
 ```
 
@@ -147,10 +147,11 @@ Expected output:
 ```
 Loaded configuration for production environment
 Database: PostgreSQL - your-rds-endpoint.region.rds.amazonaws.com:5432/your-database-name
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started server process
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
+INFO: Starting main API on http://0.0.0.0:5000
+INFO: Starting admin API on http://0.0.0.0:5001
+INFO: Main API process started (PID: xxxx)
+INFO: Admin API process started (PID: xxxx)
+INFO: Both endpoints running successfully
 ```
 
 ### Step 7: Run as Background Service (Optional)

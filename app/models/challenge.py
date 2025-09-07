@@ -32,12 +32,12 @@ class Challenge(db.Model):
         return self.flag.strip() == submitted_flag.strip()
     
     def get_solve_count(self):
-        """Get number of teams that solved this challenge"""
+        """Get number of users that solved this challenge"""
         from app.models.submission import Submission
         return Submission.query.filter_by(
             challenge_id=self.id, 
             is_correct=True
-        ).distinct(Submission.team_id).count()
+        ).distinct(Submission.user_id).count()
     
     def to_dict(self, include_flag=False):
         """Convert challenge to dictionary"""

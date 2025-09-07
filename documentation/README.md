@@ -4,6 +4,13 @@
 
 ## Documentation Sections
 
+### [Parallel Endpoints Architecture](./PARALLEL_ENDPOINTS.md)
+Comprehensive guide to the dual-endpoint system
+- Main and Admin API separation
+- Security implementation
+- Configuration and best practices
+- Monitoring and logging
+
 ### [Setup & Installation Guide](./SETUP.md)
 Complete setup instructions for AWS production deployment
 - AWS EC2 instance configuration
