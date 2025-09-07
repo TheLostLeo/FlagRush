@@ -5,6 +5,12 @@ Flask-CORS==4.0.0
 Flask-Migrate==4.0.5
 python-dotenv==1.0.0
 psycopg2-binary==2.9.7
-cryptography>=41.0.0
+cryptography==41.0.3
 bcrypt==4.1.2
 gunicorn==21.2.0
+
+# Optional for local development (SQLite fallback)
+SQLAlchemy==2.0.29
+
+# For password hashing
+Werkzeug==3.0.1

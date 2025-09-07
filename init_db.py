@@ -29,7 +29,7 @@ def create_admin_user():
             db.session.add(admin)
             db.session.commit()
             
-            print(f"Admin user created: {admin_username} with email: {admin_email}")
+            print(f"Admin user created: {admin_username} with pasword: {admin_password}")
         else:
             print("Admin user already exists")
 
