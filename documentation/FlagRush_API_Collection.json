@@ -69,13 +69,10 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "if (pm.response.code === 200) {",
-                      "    const response = pm.response.json();",
-                      "    if (response.data && response.data.access_token) {",
-                      "        pm.collectionVariables.set('auth_token', response.data.access_token);",
-                      "        console.log('Auth token saved:', response.data.access_token);",
-                      "    }",
-                      "}"
+                      "pm.test('Login returns 200', function () { pm.response.to.have.status(200); });",
+                      "const json = pm.response.json();",
+                      "pm.test('Login payload has token', function () { pm.expect(json.data && json.data.access_token).to.be.a('string'); });",
+                      "if (json.data && json.data.access_token) { pm.collectionVariables.set('auth_token', json.data.access_token); }"
                     ]
                   }
                 }
@@ -101,19 +98,28 @@
             },
             {
               "name": "Get User Profile",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": { "exec": [
+                    "if (!pm.collectionVariables.get('auth_token')) { postman.setNextRequest('Login User'); }"
+                  ] }
+                },
+                {
+                  "listen": "test",
+                  "script": { "exec": [
+                    "pm.test('Profile 200', function () { pm.response.to.have.status(200); });",
+                    "const j = pm.response.json();",
+                    "pm.test('Profile has username', function () { pm.expect(j.data && j.data.username).to.be.a('string'); });"
+                  ] }
+                }
+              ],
               "request": {
                 "method": "GET",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{auth_token}}"
-                  }
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
                 ],
-                "url": {
-                  "raw": "{{main_url}}/api/auth/profile",
-                  "host": ["{{main_url}}"],
-                  "path": ["api", "auth", "profile"]
-                }
+                "url": {"raw": "{{main_url}}/api/auth/profile", "host": ["{{main_url}}"], "path": ["api","auth","profile"]}
               }
             }
           ]
@@ -123,19 +129,14 @@
           "item": [
             {
               "name": "Get All Challenges",
+              "event": [{"listen":"test","script":{"exec":[
+                "pm.test('Challenges 200', function(){ pm.response.to.have.status(200); });",
+                "const arr = pm.response.json().data; pm.test('Challenges is array', function(){ pm.expect(arr).to.be.an('array'); });"
+              ]}}],
               "request": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{auth_token}}"
-                  }
-                ],
-                "url": {
-                  "raw": "{{main_url}}/api/challenges/",
-                  "host": ["{{main_url}}"],
-                  "path": ["api", "challenges", ""]
-                }
+                "header": [ {"key": "Authorization", "value": "Bearer {{auth_token}}"} ],
+                "url": {"raw": "{{main_url}}/api/challenges/", "host": ["{{main_url}}"], "path": ["api","challenges", ""]}
               }
             },
             {
@@ -179,27 +180,14 @@
           "item": [
             {
               "name": "Submit Flag",
+              "event": [{"listen":"test","script":{"exec":[
+                "pm.test('Submit flag response 200/400', function(){ pm.expect([200,400]).to.include(pm.response.code); });"
+              ]}}],
               "request": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{auth_token}}"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"challenge_id\": 1,\n  \"flag\": \"flag{your_flag_here}\"\n}"
-                },
-                "url": {
-                  "raw": "{{main_url}}/api/submissions/",
-                  "host": ["{{main_url}}"],
-                  "path": ["api", "submissions", ""]
-                }
+                "header": [ {"key": "Authorization", "value": "Bearer {{auth_token}}"}, {"key":"Content-Type","value":"application/json"} ],
+                "body": { "mode":"raw", "raw":"{\n  \"challenge_id\": 1,\n  \"flag\": \"flag{your_flag_here}\"\n}" },
+                "url": {"raw":"{{main_url}}/api/submissions/", "host":["{{main_url}}"], "path":["api","submissions", ""]}
               }
             },
             {
@@ -288,34 +276,19 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "if (pm.response.code === 200) {",
-                      "    const response = pm.response.json();",
-                      "    if (response.data && response.data.access_token) {",
-                      "        pm.collectionVariables.set('auth_token', response.data.access_token);",
-                      "        console.log('Admin auth token saved:', response.data.access_token);",
-                      "    }",
-                      "}"
+                      "pm.test('Admin login 200', function(){ pm.response.to.have.status(200); });",
+                      "const j = pm.response.json();",
+                      "pm.test('Admin token exists', function(){ pm.expect(j.data && j.data.access_token).to.be.a('string'); });",
+                      "if (j.data && j.data.access_token) { pm.collectionVariables.set('auth_token', j.data.access_token); }"
                     ]
                   }
                 }
               ],
               "request": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"your_admin_password\"\n}"
-                },
-                "url": {
-                  "raw": "{{admin_url}}/api/auth/login",
-                  "host": ["{{admin_url}}"],
-                  "path": ["api", "auth", "login"]
-                }
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"your_admin_password\"\n}" },
+                "url": {"raw": "{{admin_url}}/api/auth/login", "host": ["{{admin_url}}"], "path": ["api","auth","login"]}
               }
             },
             {

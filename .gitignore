@@ -60,3 +60,10 @@ instance/
 # AWS
 .aws/
 aws-credentials
+
+
+# Test and tooling caches
+.pytest_cache/
+.mypy_cache/
+.cache/
+

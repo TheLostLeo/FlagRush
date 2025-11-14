@@ -1,0 +1,14 @@
+FROM nginx:alpine
+
+# Copy static site
+COPY frontend /usr/share/nginx/html
+
+# Use default nginx config (root /usr/share/nginx/html)
+# Optionally override with a custom config if needed later
+
+# Provide a default config.js at build time if missing
+RUN if [ ! -f /usr/share/nginx/html/config.js ]; then \
+      cp /usr/share/nginx/html/config.example.js /usr/share/nginx/html/config.js; \
+    fi
+
+EXPOSE 80

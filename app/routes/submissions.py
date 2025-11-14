@@ -6,6 +6,9 @@ from app.models.challenge import Challenge
 from app.models.user import User
 from app.utils.helpers import success_response, error_response, validate_required_fields
 from app.utils.decorators import admin_required
+from app.utils.aws import send_sqs_message
+import os, json
+import hashlib
 
 submissions_bp = Blueprint('submissions', __name__)
 
@@ -28,6 +31,24 @@ def submit_flag():
         challenge = Challenge.query.get(data['challenge_id'])
         
         if not challenge or not challenge.is_active:
+            # Audit: attempted submission to non-existent/inactive challenge
+            audit_queue = os.environ.get('SQS_AUDIT_QUEUE_URL') or os.environ.get('SQS_QUEUE_URL')
+            if audit_queue:
+                try:
+                    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+                    user_agent = request.headers.get('User-Agent')
+                    payload = {
+                        'event': 'flag_submission_blocked',
+                        'reason': 'challenge_not_found_or_inactive',
+                        'user_id': user.id,
+                        'username': user.username,
+                        'challenge_id': data.get('challenge_id'),
+                        'client_ip': client_ip,
+                        'user_agent': user_agent,
+                    }
+                    send_sqs_message(audit_queue, payload)
+                except Exception:
+                    pass
             return error_response("Challenge not found", 404)
         
         # Check if user has already solved this challenge
@@ -38,6 +59,25 @@ def submit_flag():
         ).first()
         
         if existing_correct_submission:
+            # Audit: duplicate solve attempt blocked
+            audit_queue = os.environ.get('SQS_AUDIT_QUEUE_URL') or os.environ.get('SQS_QUEUE_URL')
+            if audit_queue:
+                try:
+                    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+                    user_agent = request.headers.get('User-Agent')
+                    payload = {
+                        'event': 'flag_submission_blocked',
+                        'reason': 'already_solved',
+                        'user_id': user.id,
+                        'username': user.username,
+                        'challenge_id': challenge.id,
+                        'challenge_title': challenge.title,
+                        'client_ip': client_ip,
+                        'user_agent': user_agent,
+                    }
+                    send_sqs_message(audit_queue, payload)
+                except Exception:
+                    pass
             return error_response("Challenge already solved", 400)
         
         # Check if flag is correct
@@ -56,6 +96,54 @@ def submit_flag():
         
         message = "Correct flag! Well done!" if is_correct else "Incorrect flag. Try again!"
         
+        # Optionally emit SQS audit event for every submission (no flag content)
+        audit_queue = os.environ.get('SQS_AUDIT_QUEUE_URL') or os.environ.get('SQS_QUEUE_URL')
+        if audit_queue:
+            try:
+                flag_hash = hashlib.sha256((data.get('flag') or '').encode('utf-8')).hexdigest()
+                client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+                user_agent = request.headers.get('User-Agent')
+                audit_payload = {
+                    'event': 'flag_submission',
+                    'submission_id': submission.id,
+                    'user_id': user.id,
+                    'username': user.username,
+                    'challenge_id': challenge.id,
+                    'challenge_title': challenge.title,
+                    'is_correct': is_correct,
+                    'points_awarded': challenge.points if is_correct else 0,
+                    'flag_sha256': flag_hash,
+                    'submitted_at': submission.submitted_at.isoformat() if submission.submitted_at else None,
+                    'client_ip': client_ip,
+                    'user_agent': user_agent,
+                }
+                send_sqs_message(audit_queue, audit_payload)
+            except Exception:
+                pass
+
+        # Optionally emit SQS event for correct submissions (downstream reactions)
+        if is_correct:
+            queue_url = os.environ.get('SQS_QUEUE_URL')
+            if queue_url:
+                try:
+                    payload = {
+                        'event': 'challenge_solved',
+                        'submission_id': submission.id,
+                        'user_id': user.id,
+                        'username': user.username,
+                        'challenge_id': challenge.id,
+                        'challenge_title': challenge.title if challenge else None,
+                        'points': challenge.points,
+                        'submitted_at': submission.submitted_at.isoformat() if submission.submitted_at else None
+                    }
+                    # Optional: include plaintext flag in solved events (for secure S3 logging only)
+                    if os.environ.get('SQS_INCLUDE_PLAINTEXT_FLAG_ON_SOLVE', 'false').lower() == 'true':
+                        payload['flag'] = data.get('flag')
+                    send_sqs_message(queue_url, payload)
+                except Exception:
+                    # Do not block user flow on event failures
+                    pass
+
         return success_response(
             data={
                 'submission': submission.to_dict(),

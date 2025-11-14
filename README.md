@@ -12,38 +12,20 @@ A Flask-based backend for Capture The Flag (CTF) competitions, designed to run o
 - Flag submission and verification
 - User statistics and tracking
 
-## Architecture
-
-The platform runs as two separate applications:
-
-### Main Application (Port 5000)
-- User-facing API endpoints
-- Challenge viewing and flag submissions
-- User profile management
-- Real-time leaderboard
-- Supports regular CTF participants
-- Available endpoints:
-  - `/api/auth` - Authentication
-  - `/api/challenges` - View available challenges
-  - `/api/submissions` - Submit flags and view progress
-
-### Admin Application (Port 5001)
-- Administrative operations only
-- Challenge management (CRUD operations)
-- System monitoring and stats
-- Complete admin control
-- Available endpoints:
-  - `/api/auth` - Admin authentication
-  - `/api/admin/challenges` - Challenge management
-  - More admin endpoints detailed in documentation
 
 ## Documentation
 
 Find detailed documentation in the [documentation](./documentation/) folder.
 
+- Proposed Methodology: [documentation/Proposed_Methodology.md](documentation/Proposed_Methodology.md)
+- Architecture Diagram: [documentation/Architecture_Diagram.md](documentation/Architecture_Diagram.md)
+- Workflows: [documentation/Workflow.md](documentation/Workflow.md)
+- Implementation, Results, and Conclusion: [documentation/Implementation_Results_Conclusion.md](documentation/Implementation_Results_Conclusion.md)
+
 ## Default Admin User
 
 After running `python3 init_db.py`, a default admin user is created:
+
 - Username: `admin`
 - Password: `admin123`
 
@@ -52,6 +34,7 @@ After running `python3 init_db.py`, a default admin user is created:
 ## EC2 Security Group Settings
 
 Make sure your EC2 Security Group allows:
+
 - Port 22 (SSH) - for server access
 - Port 5000 (Custom TCP) - for the main Flask application
 - Port 5001 (Custom TCP) - for the admin interface
@@ -60,6 +43,7 @@ Make sure your EC2 Security Group allows:
 ## Development Setup
 
 1. Set up your environment:
+
    ```bash
    python -m venv venv
    source venv/bin/activate
@@ -67,6 +51,7 @@ Make sure your EC2 Security Group allows:
    ```
 
 2. Configure your `.env` file:
+
    ```bash
    cp .env.example .env
    # Edit .env with your settings:
@@ -76,16 +61,19 @@ Make sure your EC2 Security Group allows:
    ```
 
 3. Initialize the database:
+
    ```bash
    python init_db.py      # Creates tables and admin user
    ```
 
 4. Start both applications:
+
    ```bash
    python app.py
    ```
 
 5. Verify the setup:
+
    ```bash
    # Check main application
    curl http://localhost:5000/health
@@ -94,46 +82,35 @@ Make sure your EC2 Security Group allows:
    curl http://localhost:5001/health
    ```
 
-## API Usage Examples
+## Docker (local)
 
-### Main Application (Port 5000)
+Run the backend (main + admin), Postgres, and the static frontend with Docker:
+
 ```bash
-# User login
-curl -X POST http://localhost:5000/api/auth/login \
-  -d '{"username": "user", "password": "password"}'
+# Build images and start stack
+docker compose up --build -d
 
-# View challenges
-curl http://localhost:5000/api/challenges \
-  -H "Authorization: Bearer <token>"
-
-# Submit flag
-curl -X POST http://localhost:5000/api/submissions \
-  -H "Authorization: Bearer <token>" \
-  -d '{"challenge_id": 1, "flag": "flag{...}"}'
+# Tail logs
+docker compose logs -f --tail=100
 ```
 
-### Admin Application (Port 5001)
+What you get:
+
+- Frontend: <http://localhost:8080>
+- Main API: <http://localhost:5000>
+- Admin API: <http://localhost:5001>
+- Postgres: localhost:5432 (user: flaguser, pass: flagpass, db: flagrush by default)
+
+Notes:
+
+- The frontend defaults to calling the API at <http://localhost:5000> via `frontend/config.js`.
+- CORS is allowed for <http://localhost:8080> by default in `docker-compose.yml` (override via `CORS_ALLOW_ORIGINS`).
+- To seed an admin user in Docker, you can exec into the main API container and run the init script:
+
 ```bash
-# Admin login
-curl -X POST http://localhost:5001/api/auth/login \
-  -d '{"username": "admin", "password": "admin123"}'
-
-# Create new challenge
-curl -X POST http://localhost:5001/api/admin/challenges \
-  -H "Authorization: Bearer <admin_token>" \
-  -d '{
-    "title": "Web Challenge",
-    "description": "Find the hidden flag",
-    "category": "web",
-    "points": 100,
-    "flag": "flag{secret}"
-  }'
-
-# Update challenge
-curl -X PUT http://localhost:5001/api/admin/challenges/1 \
-  -H "Authorization: Bearer <admin_token>" \
-  -d '{"points": 200}'
+docker compose exec api-main python init_db.py
 ```
+
 
 ## Contributing
 

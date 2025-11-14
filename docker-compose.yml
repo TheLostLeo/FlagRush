@@ -1,0 +1,81 @@
+services:
+  db:
+    image: postgres:15
+    container_name: ctf-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-flaguser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-flagpass}
+      POSTGRES_DB: ${DB_NAME:-flagrush}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  api-main:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: flagrush-backend:latest
+    container_name: flagrush-api-main
+    restart: unless-stopped
+    environment:
+      # App settings
+      FLASK_DEBUG: ${FLASK_DEBUG:-0}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:8080}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-jwt-secret}
+      # DB settings (connect to the postgres service)
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-flaguser}
+      DB_PASSWORD: ${DB_PASSWORD:-flagpass}
+      DB_NAME: ${DB_NAME:-flagrush}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+
+  api-admin:
+    image: flagrush-backend:latest
+    container_name: flagrush-api-admin
+    restart: unless-stopped
+    environment:
+      FLASK_DEBUG: ${FLASK_DEBUG:-0}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:8080}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-jwt-secret}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-flaguser}
+      DB_PASSWORD: ${DB_PASSWORD:-flagpass}
+      DB_NAME: ${DB_NAME:-flagrush}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "2", "--threads", "2", "wsgi_admin:app"]
+    ports:
+      - "5001:5001"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: flagrush-frontend:latest
+    container_name: flagrush-frontend
+    restart: unless-stopped
+    depends_on:
+      - api-main
+    ports:
+      - "8080:80"
+
+volumes:
+  db-data:
+    driver: local

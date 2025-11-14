@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FlagRush</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
+</head>
+<body>
+  <header>
+    <h1>FlagRush</h1>
+    <div id="status"></div>
+  </header>
+
+  <main>
+    <section id="auth-section" class="card">
+      <h2>Authenticate</h2>
+      <div class="tabs">
+        <button id="tab-login" class="active">Login</button>
+        <button id="tab-register">Register</button>
+      </div>
+      <form id="login-form" class="form visible">
+        <label>
+          Username
+          <input type="text" id="login-username" required />
+        </label>
+        <label>
+          Password
+          <input type="password" id="login-password" required />
+        </label>
+        <button type="submit">Login</button>
+      </form>
+      <form id="register-form" class="form">
+        <label>
+          Username
+          <input type="text" id="reg-username" required />
+        </label>
+        <label>
+          Email
+          <input type="email" id="reg-email" required />
+        </label>
+        <label>
+          Password
+          <input type="password" id="reg-password" required />
+        </label>
+        <button type="submit">Register</button>
+      </form>
+      <div id="auth-message" class="message"></div>
+    </section>
+
+    <section id="app-section" class="card hidden">
+      <div class="toolbar">
+        <div>
+          Logged in as <span id="current-user"></span>
+        </div>
+        <button id="logout-btn">Logout</button>
+      </div>
+
+      <div class="grid">
+        <div>
+          <h2>Challenges</h2>
+          <ul id="challenges" class="list"></ul>
+        </div>
+        <div>
+          <h2>Details</h2>
+          <div id="challenge-details" class="details"></div>
+          <form id="submit-flag-form" class="form hidden">
+            <label>
+              Flag
+              <input type="text" id="flag-input" placeholder="flag{...}" />
+            </label>
+            <button type="submit">Submit Flag</button>
+          </form>
+          <div id="submit-result" class="message"></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <h2>Leaderboard</h2>
+          <ol id="leaderboard" class="list"></ol>
+        </div>
+        <div>
+          <h2>My Stats</h2>
+          <div id="stats"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Backend: <span id="backend-url"></span></small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

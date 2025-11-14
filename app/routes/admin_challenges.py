@@ -4,6 +4,9 @@ from app.models.challenge import Challenge
 from app.utils.helpers import success_response, error_response, validate_required_fields
 from app.utils.decorators import admin_required
 from app.middleware import route_middleware
+from app.utils.aws import s3_presigned_put_url
+import os
+import uuid
 
 admin_challenges_bp = Blueprint('admin_challenges', __name__)
 
@@ -47,6 +50,44 @@ def create_challenge():
     except Exception as e:
         db.session.rollback()
         return error_response(f"Failed to create challenge: {str(e)}", 500)
+
+
+@admin_challenges_bp.route('/storage/presign-upload', methods=['POST'])
+@admin_required
+@route_middleware()
+def presign_upload():
+    """Generate a presigned S3 PUT URL for uploading challenge attachments.
+    Body: { "filename": "file.zip", "content_type": "application/zip", "prefix": "optional/subfolder" }
+    Requires env S3_BUCKET to be set.
+    """
+    try:
+        bucket = os.environ.get('S3_BUCKET')
+        if not bucket:
+            return error_response("S3_BUCKET is not configured on the server", 500)
+
+        data = request.get_json() or {}
+        filename = data.get('filename')
+        content_type = data.get('content_type', 'application/octet-stream')
+        prefix = data.get('prefix', 'challenges')
+
+        if not filename:
+            return error_response("filename is required", 400)
+
+        unique_id = str(uuid.uuid4())
+        key = f"{prefix.rstrip('/')}/{unique_id}_{filename}"
+
+        url = s3_presigned_put_url(bucket=bucket, key=key, content_type=content_type, expires_in=600)
+        if not url:
+            return error_response("Failed to generate presigned URL", 500)
+
+        # Return s3:// URL reference for storing in Challenge.file_url
+        return success_response({
+            'upload_url': url,
+            's3_url': f"s3://{bucket}/{key}",
+            'expires_in': 600
+        }, message="Presigned URL created")
+    except Exception as e:
+        return error_response(f"Failed to create presigned URL: {str(e)}", 500)
 
 @admin_challenges_bp.route('/challenges/<int:challenge_id>', methods=['PUT'])
 @admin_required

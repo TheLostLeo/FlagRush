@@ -1,0 +1,20 @@
+# Template systemd unit for the admin API
+# Replace /path/to/project and /path/to/venv accordingly
+
+[Unit]
+Description=FlagRush Admin API (Gunicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/path/to/project
+EnvironmentFile=/etc/sysconfig/flagrush.env
+# Consider binding admin to localhost for security; adjust security group accordingly
+ExecStart=/path/to/venv/bin/gunicorn --bind 127.0.0.1:${ADMIN_PORT:-5001} --workers 1 --threads 2 --timeout 60 wsgi_admin:app
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+# Template systemd unit for the main API
+# Replace /path/to/project and /path/to/venv accordingly
+
+[Unit]
+Description=FlagRush Main API (Gunicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/path/to/project
+EnvironmentFile=/etc/sysconfig/flagrush.env
+ExecStart=/path/to/venv/bin/gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 2 --timeout 60 wsgi_main:app
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
